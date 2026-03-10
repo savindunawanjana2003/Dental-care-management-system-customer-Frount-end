@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DentalCare - Payment Gateway</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Bootstrap Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      /* Navbar Styles - Matching main page */
+      .navbar {
+        background: linear-gradient(135deg, #1c2d81 0%, #008b2a 100%);
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        padding: 15px 0;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .navbar::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: rgba(255, 255, 255, 0.1);
+        transform: rotate(45deg);
+        animation: navbarShimmer 4s infinite;
+      }
+
+      @keyframes navbarShimmer {
+        0% {
+          transform: translateX(-100%) rotate(45deg);
+        }
+        100% {
+          transform: translateX(100%) rotate(45deg);
+        }
+      }
+
+      .navbar * {
+        position: relative;
+        z-index: 2;
+      }
+
+      /* Sign In / Sign Up container */
+      #box {
+        display: flex;
+        gap: 20px;
+        margin-left: 20px;
+      }
+
+      #sinig,
+      #sing-Up {
+        padding: 10px 20px;
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.3s;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+
+      #sinig:hover,
+      #sing-Up:hover {
+        transform: translateY(-2px);
+        background-color: #ffd700;
+        color: #1c2d81;
+        border-color: #ffd700;
+      }
+
+      #box i {
+        margin-right: 8px;
+      }
+
+      /* Payment Page Styles */
+      .payment-container {
+        margin-top: 100px;
+        padding: 30px 20px;
+      }
+
+      .page-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 40px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .page-header h1 {
+        color: #1c2d81;
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+
+      .page-header p {
+        color: #008b2a;
+        font-size: 18px;
+      }
+
+      /* Gateway Cards */
+      .gateway-grid {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        flex-wrap: wrap;
+        margin-bottom: 40px;
+      }
+
+      .gateway-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        width: 280px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 2px solid #e0e0e0;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      .gateway-card:hover {
+        transform: translateY(-10px);
+        border-color: #008b2a;
+        box-shadow: 0 20px 40px rgba(28, 45, 129, 0.15);
+      }
+
+      .gateway-card.selected {
+        border-color: #1c2d81;
+        background: linear-gradient(135deg, #f8f9fa, #ffffff);
+      }
+
+      .gateway-icon {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 20px;
+        background: #f8f9fa;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        color: #1c2d81;
+        border: 2px dashed #008b2a;
+      }
+
+      .gateway-card h3 {
+        color: #1c2d81;
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      .gateway-card p {
+        color: #6c757d;
+        font-size: 14px;
+        margin-bottom: 20px;
+      }
+
+      .payment-badge {
+        background: #008b2a;
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 12px;
+        display: inline-block;
+      }
+
+      /* Important Notice */
+      .notice-card {
+        background: #fff3cd;
+        border-left: 5px solid #ffc107;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 30px;
+        text-align: left;
+      }
+
+      .notice-card i {
+        color: #856404;
+        font-size: 24px;
+        margin-right: 15px;
+      }
+
+      .notice-card strong {
+        color: #856404;
+      }
+
+      /* Bank Details Section */
+      .bank-details-card {
+        background: linear-gradient(135deg, #f8f9fa, #ffffff);
+        border-radius: 15px;
+        padding: 30px;
+        margin: 30px 0;
+        border: 2px solid #1c2d81;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .bank-details-card::before {
+        content: "🏦";
+        position: absolute;
+        top: -20px;
+        right: -20px;
+        font-size: 120px;
+        opacity: 0.05;
+        transform: rotate(15deg);
+      }
+
+      .bank-details-header {
+        color: #1c2d81;
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .bank-details-header i {
+        color: #008b2a;
+      }
+
+      .bank-info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        margin-bottom: 25px;
+      }
+
+      .bank-info-item {
+        padding: 15px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+
+      .bank-info-item .label {
+        color: #6c757d;
+        font-size: 14px;
+        margin-bottom: 5px;
+      }
+
+      .bank-info-item .value {
+        color: #1c2d81;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .bank-info-item .value i {
+        color: #008b2a;
+        margin-right: 8px;
+      }
+
+      /* Payment Actions */
+      .payment-actions {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 30px;
+      }
+
+      .btn-payment {
+        padding: 15px 40px;
+        background: linear-gradient(135deg, #1c2d81 0%, #008b2a 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 18px;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+      }
+
+      .btn-payment:hover {
+        transform: scale(1.05);
+        box-shadow: 0 10px 30px rgba(28, 45, 129, 0.3);
+      }
+
+      .btn-payment:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .btn-payment i {
+        transition: transform 0.3s;
+      }
+
+      .btn-payment:hover i {
+        transform: translateX(5px);
+      }
+
+      /* WhatsApp Button */
+      .whatsapp-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: #25d366;
+        color: white;
+        padding: 12px 25px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s;
+        margin-top: 15px;
+      }
+
+      .whatsapp-btn:hover {
+        background: #128c7e;
+        color: white;
+        transform: translateY(-2px);
+      }
+
+      /* Note styles */
+      .security-note {
+        background: #e7f3ff;
+        color: #1c2d81;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .security-note i {
+        font-size: 24px;
+      }
+
+      @media (max-width: 768px) {
+        .payment-container {
+          margin-top: 120px;
+        }
+        .bank-info-grid {
+          grid-template-columns: 1fr;
+        }
+        .payment-actions {
+          flex-direction: column;
+        }
+        #box {
+          margin-top: 10px;
+          justify-content: center;
+        }
+        #sinig,
+        #sing-Up {
+          padding: 8px 16px;
+          font-size: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar (exactly same as main page) -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand fw-bold fs-3" href="index.html">
+          <i class="bi bi-tooth me-2"></i>DentalCare
+        </a>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#nav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="nav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="index.html">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Services</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">About</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Contact</a>
+            </li>
+            <li class="nav-item ms-lg-2">
+              <a
+                class="btn btn-outline-light mt-2 mt-lg-0"
+                href="tel:+1234567890"
+              >
+                <i class="bi bi-telephone me-2"></i>Call Now
+              </a>
+            </li>
+            <div id="box">
+              <div id="sinig">
+                <i class="fa-solid fa-right-to-bracket"></i> Sign In
+              </div>
+              <div id="sing-Up">
+                <i class="fa-solid fa-user-plus"></i> Sign Up
+              </div>
+            </div>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Payment Content -->
+    <div class="payment-container">
+      <div class="container">
+        <!-- Page Header -->
+        <div class="page-header text-center">
+          <h1><i class="bi bi-credit-card me-3"></i>Secure Payment Gateway</h1>
+          <p>
+            Choose your preferred payment method to complete the appointment
+            booking
+          </p>
+        </div>
+
+        <!-- Payment Gateways -->
+        <h3 class="text-center mb-4" style="color: #1c2d81">
+          Select Payment Gateway
+        </h3>
+
+        <div class="gateway-grid">
+          <!-- PayHere Card -->
+          <div
+            class="gateway-card"
+            onclick="selectGateway('payhere')"
+            id="gateway-payhere"
+          >
+            <div class="gateway-icon">
+              <i class="fas fa-credit-card"></i>
+            </div>
+            <h3>PayHere</h3>
+            <p>Credit / Debit Cards, Digital Wallets</p>
+            <span class="payment-badge"
+              ><i class="bi bi-shield-check"></i> Secure</span
+            >
+          </div>
+
+          <!-- HNB Card -->
+          <div
+            class="gateway-card"
+            onclick="selectGateway('hnb')"
+            id="gateway-hnb"
+          >
+            <div class="gateway-icon">
+              <i class="fas fa-university"></i>
+            </div>
+            <h3>HNB Online</h3>
+            <p>Direct Bank Transfer - HNB Accounts</p>
+            <span class="payment-badge"
+              ><i class="bi bi-shield-check"></i> Secure</span
+            >
+          </div>
+        </div>
+
+        <!-- Security Note -->
+        <div class="security-note">
+          <i class="bi bi-shield-lock-fill"></i>
+          <div>
+            <strong>Note :</strong> Before proceeding with payment, please make
+            sure that your bank account is activated for online transactions.
+            Contact your bank for more information.
+          </div>
+        </div>
+
+        <hr class="my-5" style="border-top: 2px dashed #dee2e6" />
+
+        <!-- Alternative Payment Method -->
+        <div class="notice-card">
+          <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <h4 class="mb-0" style="color: #856404">
+              Alternative Payment Method
+            </h4>
+          </div>
+          <p class="mb-3">
+            <strong>Notice :</strong> Only for users who are unable to make
+            payments via above online gateways.
+          </p>
+          <p>
+            You can now deposit the appointment fee to the bank account below
+            and send a photo of your bank slip, stating your registered email
+            and appointment details on top of the slip, to
+            <strong>0704242333</strong> via WhatsApp or Viber.
+          </p>
+        </div>
+
+        <!-- Bank Details -->
+        <div class="bank-details-card">
+          <div class="bank-details-header">
+            <i class="bi bi-bank2"></i>
+            Bank Transfer Details
+          </div>
+
+          <div class="bank-info-grid">
+            <div class="bank-info-item">
+              <div class="label"><i class="bi bi-building"></i> Bank</div>
+              <div class="value">People's Bank</div>
+            </div>
+            <div class="bank-info-item">
+              <div class="label"><i class="bi bi-geo-alt"></i> Branch</div>
+              <div class="value">Matara (Dharmapala Mawatha)</div>
+            </div>
+            <div class="bank-info-item">
+              <div class="label">
+                <i class="bi bi-person-badge"></i> Account Name
+              </div>
+              <div class="value">
+                Dekma Higher Educational Institute PVT LTD
+              </div>
+            </div>
+            <div class="bank-info-item">
+              <div class="label">
+                <i class="bi bi-upc-scan"></i> Account Number
+              </div>
+              <div class="value"><strong>152100120073662</strong></div>
+            </div>
+          </div>
+
+          <!-- WhatsApp Button -->
+          <div class="text-center">
+            <a
+              href="https://wa.me/94704242333?text=Payment%20Slip%20-%20Dental%20Appointment"
+              class="whatsapp-btn"
+              target="_blank"
+            >
+              <i class="fab fa-whatsapp fa-lg"></i>
+              Send Payment Slip via WhatsApp
+            </a>
+            <p class="mt-2 text-muted" style="font-size: 14px">
+              <i class="bi bi-telephone"></i> Also available on Viber:
+              0704242333
+            </p>
+          </div>
+        </div>
+
+        <!-- Payment Action Buttons -->
+        <div class="payment-actions">
+          <button class="btn-payment" onclick="processPayment()" id="payButton">
+            <i class="bi bi-lock-fill"></i>
+            Proceed to Payment
+          </button>
+          <a
+            href="index.html"
+            class="btn-payment"
+            style="background: #6c757d; text-decoration: none"
+          >
+            <i class="bi bi-arrow-left"></i>
+            Back to Dashboard
+          </a>
+        </div>
+
+        <!-- Selected Gateway Indicator -->
+        <div
+          class="text-center mt-4"
+          id="selectedGatewayText"
+          style="color: #6c757d"
+        >
+          No payment gateway selected
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+      let selectedGateway = null;
+
+      // Navbar scroll effect
+      window.addEventListener("scroll", function () {
+        const navbar = document.querySelector(".navbar");
+        if (window.scrollY > 50) {
+          navbar.classList.add("scrolled");
+        } else {
+          navbar.classList.remove("scrolled");
+        }
+      });
+
+      // Select Gateway Function
+      function selectGateway(gateway) {
+        selectedGateway = gateway;
+
+        // Remove selected class from both
+        document.getElementById("gateway-payhere").classList.remove("selected");
+        document.getElementById("gateway-hnb").classList.remove("selected");
+
+        // Add selected class to chosen gateway
+        if (gateway === "payhere") {
+          document.getElementById("gateway-payhere").classList.add("selected");
+          document.getElementById("selectedGatewayText").innerHTML =
+            '<i class="bi bi-check-circle-fill text-success"></i> Selected: PayHere';
+        } else {
+          document.getElementById("gateway-hnb").classList.add("selected");
+          document.getElementById("selectedGatewayText").innerHTML =
+            '<i class="bi bi-check-circle-fill text-success"></i> Selected: HNB Online';
+        }
+
+        // Enable pay button with animation
+        const payButton = document.getElementById("payButton");
+        payButton.disabled = false;
+        payButton.style.opacity = "1";
+      }
+
+      // Process Payment Function
+      function processPayment() {
+        alert("okkk");
+        if (!selectedGateway) {
+          Swal.fire({
+            title: "No Gateway Selected",
+            text: "Please select a payment gateway to continue",
+            icon: "warning",
+            confirmButtonColor: "#1c2d81",
+            confirmButtonText: "OK",
+          });
+          return;
+        }
+
+        // Show processing alert
+        Swal.fire({
+          title: "Processing Payment",
+          text: "Please wait while we redirect you to the secure payment page...",
+          icon: "info",
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true,
+        });
+
+        // Simulate redirect based on selected gateway
+        setTimeout(() => {
+          if (selectedGateway === "payhere") {
+            Swal.fire({
+              title: "Redirecting to PayHere",
+              html: "You will be redirected to PayHere secure payment gateway.",
+              icon: "success",
+              confirmButtonColor: "#1c2d81",
+              confirmButtonText: "Continue",
+            }).then((result) => {
+              if (result.isConfirmed) {
+                // window.location.href = 'https://www.payhere.lk'; // Uncomment in production
+                alert("Demo: Redirect to PayHere payment page");
+              }
+            });
+          } else {
+            Swal.fire({
+              title: "Redirecting to HNB Online",
+              html: "You will be redirected to HNB online banking portal.",
+              icon: "success",
+              confirmButtonColor: "#1c2d81",
+              confirmButtonText: "Continue",
+            }).then((result) => {
+              if (result.isConfirmed) {
+                // window.location.href = 'https://www.hnb.net'; // Uncomment in production
+                alert("Demo: Redirect to HNB payment page");
+              }
+            });
+          }
+        }, 2000);
+      }
+
+      // Handle Sign In/Sign Up clicks (for demo)
+      document.getElementById("sinig").addEventListener("click", function () {
+        Swal.fire({
+          title: "Sign In",
+          text: "This is a demo version. Sign in functionality will be available soon.",
+          icon: "info",
+          confirmButtonColor: "#1c2d81",
+        });
+      });
+
+      document.getElementById("sing-Up").addEventListener("click", function () {
+        Swal.fire({
+          title: "Sign Up",
+          text: "This is a demo version. Sign up functionality will be available soon.",
+          icon: "info",
+          confirmButtonColor: "#1c2d81",
+        });
+      });
+
+      // Initialize pay button as disabled
+      document.getElementById("payButton").disabled = true;
+    </script>
+  </body>
+</html>
