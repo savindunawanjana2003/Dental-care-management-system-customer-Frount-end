@@ -288,11 +288,13 @@
         align-items: center;
         gap: 10px;
         cursor: pointer;
+        text-decoration: none;
       }
 
       .btn-payment:hover {
         transform: scale(1.05);
         box-shadow: 0 10px 30px rgba(28, 45, 129, 0.3);
+        color: white;
       }
 
       .btn-payment:disabled {
@@ -587,8 +589,22 @@
       type="text/javascript"
       src="https://www.payhere.lk/lib/payhere.js"
     ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
     <script>
+      // ==================== CONFIGURATION ====================
+      // IMPORTANT: Replace these with your actual PayHere credentials
+      const PAYHERE_CONFIG = {
+        merchant_id: "1234435", // Replace with your Merchant ID
+        merchant_secret: "MzU4NTk2MzAxMzE4NzM1Njk5ODUxMTg1ODIwODU5ODM0NDY5MTUz", // Replace with your Merchant Secret
+        sandbox: false, // Set to false for production
+        // Update these URLs with your actual domain
+        return_url: "http://127.0.0.1:5501/pages/succsess.html",
+        cancel_url: "http://127.0.0.1:5501/pages/succsess.html",
+        notify_url: "https://yourdomain.com/api/payhere-notify", // Must be HTTPS in production
+      };
+      // ======================================================
+
       let selectedGateway = null;
 
       // Navbar scroll effect
@@ -613,110 +629,184 @@
         if (gateway === "payhere") {
           document.getElementById("gateway-payhere").classList.add("selected");
           document.getElementById("selectedGatewayText").innerHTML =
-            '<i class="bi bi-check-circle-fill text-success"></i> Selected: PayHere';
+            '<i class="bi bi-check-circle-fill text-success"></i> Selected: PayHere (Credit/Debit Cards, Digital Wallets)';
+
+          // Enable pay button
+          document.getElementById("payButton").disabled = false;
+          document.getElementById("payButton").style.opacity = "1";
         } else {
           document.getElementById("gateway-hnb").classList.add("selected");
           document.getElementById("selectedGatewayText").innerHTML =
-            '<i class="bi bi-check-circle-fill text-success"></i> Selected: HNB Online';
-        }
+            '<i class="bi bi-check-circle-fill text-success"></i> Selected: HNB Online (Direct Bank Transfer)';
 
-        // Enable pay button with animation
-        const payButton = document.getElementById("payButton");
-        payButton.disabled = false;
-        payButton.style.opacity = "1";
+          // Enable pay button
+          document.getElementById("payButton").disabled = false;
+          document.getElementById("payButton").style.opacity = "1";
+        }
       }
-      // ========================
+
+      // Generate hash function for PayHere
+      function generatePayHereHash(orderId, amount) {
+        try {
+          // According to PayHere documentation:
+          // hash = strtoupper(md5(merchant_id + order_id + amount + currency + strtoupper(md5(merchant_secret))))
+
+          // Step 1: Generate MD5 of merchant_secret and convert to uppercase
+          const secretMd5 = CryptoJS.MD5(PAYHERE_CONFIG.merchant_secret)
+            .toString()
+            .toUpperCase();
+
+          // Step 2: Format amount to 2 decimal places without commas
+          const formattedAmount = parseFloat(amount).toFixed(2);
+
+          // Step 3: Concatenate all values
+          const rawString =
+            PAYHERE_CONFIG.merchant_id +
+            orderId +
+            formattedAmount +
+            "LKR" +
+            secretMd5;
+
+          // Step 4: Generate final MD5 hash and convert to uppercase
+          const finalHash = CryptoJS.MD5(rawString).toString().toUpperCase();
+
+          console.log("Hash generated successfully:", finalHash);
+          return finalHash;
+        } catch (error) {
+          console.error("Error generating hash:", error);
+          return null;
+        }
+      }
 
       // Process Payment Function
       function processPayment() {
-        alert("okkk");
-        // if (!selectedGateway) {
-        //   Swal.fire({
-        //     title: "No Gateway Selected",
-        //     text: "Please select a payment gateway to continue",
-        //     icon: "warning",
-        //     confirmButtonColor: "#1c2d81",
-        //     confirmButtonText: "OK",
-        //   });
-        //   return;
-        // }
+        if (!selectedGateway) {
+          Swal.fire({
+            title: "No Gateway Selected",
+            text: "Please select a payment gateway to continue",
+            icon: "warning",
+            confirmButtonColor: "#1c2d81",
+            confirmButtonText: "OK",
+          });
+          return;
+        }
 
-        // // Show processing alert
-        // Swal.fire({
-        //   title: "Processing Payment",
-        //   text: "Please wait while we redirect you to the secure payment page...",
-        //   icon: "info",
-        //   showConfirmButton: false,
-        //   timer: 2000,
-        //   timerProgressBar: true,
-        // });
+        if (selectedGateway === "payhere") {
+          processPayHerePayment();
+        } else if (selectedGateway === "hnb") {
+          // Handle HNB payment
+          Swal.fire({
+            title: "HNB Online Payment",
+            text: "You will be redirected to HNB payment gateway",
+            icon: "info",
+            confirmButtonColor: "#1c2d81",
+            confirmButtonText: "Proceed",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              Swal.fire({
+                title: "Demo Mode",
+                text: "HNB payment integration - Redirect to HNB portal",
+                icon: "info",
+                confirmButtonColor: "#1c2d81",
+              });
+              // window.location.href = 'your-hnb-payment-url';
+            }
+          });
+        }
+      }
 
-        // // Simulate redirect based on selected gateway
-        // setTimeout(() => {
-        //   if (selectedGateway === "payhere") {
-        //     Swal.fire({
-        //       title: "Redirecting to PayHere",
-        //       html: "You will be redirected to PayHere secure payment gateway.",
-        //       icon: "success",
-        //       confirmButtonColor: "#1c2d81",
-        //       confirmButtonText: "Continue",
-        //     }).then((result) => {
-        //       if (result.isConfirmed) {
-        //         // window.location.href = 'https://www.payhere.lk'; // Uncomment in production
-        //         alert("Demo: Redirect to PayHere payment page");
-        //       }
-        //     });
-        //   } else {
-        //     Swal.fire({
-        //       title: "Redirecting to HNB Online",
-        //       html: "You will be redirected to HNB online banking portal.",
-        //       icon: "success",
-        //       confirmButtonColor: "#1c2d81",
-        //       confirmButtonText: "Continue",
-        //     }).then((result) => {
-        //       if (result.isConfirmed) {
-        //         // window.location.href = 'https://www.hnb.net'; // Uncomment in production
-        //         alert("Demo: Redirect to HNB payment page");
-        //       }
-        //     });
-        //   }
-        // }, 2000);
-        // =================================================================================================
-        // Payment completed. It can be a successful failure.
-        const oderid = 1001;
-        payhere.onCompleted = function onCompleted(oderid) {
-          alert("Payment completed. OrderID:" + orderId);
-          // Note: validate the payment and show success or failure page to the customer
+      function processPayHerePayment() {
+        // Show processing alert
+        Swal.fire({
+          title: "Initializing PayHere Payment",
+          text: "Please wait while we prepare the secure payment gateway...",
+          icon: "info",
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+
+        // Generate a unique order ID
+        const orderId =
+          "ORDER_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
+        const amount = "1000.00"; // You can make this dynamic based on your appointment fee
+
+        // Generate the hash
+        const hash = generatePayHereHash(orderId, amount);
+
+        if (!hash) {
+          Swal.fire({
+            title: "Error",
+            text: "Failed to generate payment hash. Please try again.",
+            icon: "error",
+            confirmButtonColor: "#1c2d81",
+          });
+          return;
+        }
+
+        // Set up PayHere event handlers
+        payhere.onCompleted = function onCompleted(orderId) {
+          console.log("Payment completed. OrderID:", orderId);
+          Swal.fire({
+            title: "Payment Successful!",
+            text:
+              "Your payment has been processed successfully. Order ID: " +
+              orderId,
+            icon: "success",
+            confirmButtonColor: "#1c2d81",
+            confirmButtonText: "View Details",
+          }).then(() => {
+            // Redirect to success page
+            window.location.href =
+              PAYHERE_CONFIG.return_url +
+              "?order_id=" +
+              orderId +
+              "&status=success";
+          });
         };
 
-        // Payment window closed
         payhere.onDismissed = function onDismissed() {
-          // Note: Prompt user to pay again or show an error page
-          alert("Payment dismissed");
+          console.log("Payment dismissed");
+          Swal.fire({
+            title: "Payment Cancelled",
+            text: "You have cancelled the payment. Please try again when you're ready.",
+            icon: "info",
+            confirmButtonColor: "#1c2d81",
+            confirmButtonText: "OK",
+          });
         };
 
-        // Error occurred
         payhere.onError = function onError(error) {
-          // Note: show an error page
-          alert("Error:" + error);
+          console.log("Error:", error);
+          Swal.fire({
+            title: "Payment Error",
+            text:
+              "An error occurred: " +
+              error +
+              ". Please try again or contact support.",
+            icon: "error",
+            confirmButtonColor: "#1c2d81",
+            confirmButtonText: "OK",
+          });
         };
 
-        var hash = "Mjc5MDM4MTkwODExMDgxMzQwMjkxODU4NjgyNjkwNDExMzI1MjEwMw==";
-        // Put the payment variables here
+        // Payment parameters
         var payment = {
-          sandbox: true,
-          merchant_id: "1234435", // Replace your Merchant ID
-          return_url: "http://127.0.0.1:5501/pages/succsess.html.html", // Important
-          cancel_url: "http://127.0.0.1:5501/pages/succsess.html.html", // Important
-          notify_url: "http://sample.com/notify",
-          order_id: "ItemNo12345",
-          items: "Door bell wireles",
-          amount: "1000.00",
+          sandbox: PAYHERE_CONFIG.sandbox,
+          merchant_id: PAYHERE_CONFIG.merchant_id,
+          return_url: PAYHERE_CONFIG.return_url,
+          cancel_url: PAYHERE_CONFIG.cancel_url,
+          notify_url: PAYHERE_CONFIG.notify_url,
+          order_id: orderId,
+          items: "Dental Appointment Booking",
+          amount: amount,
           currency: "LKR",
-          hash: hash, // *Replace with generated hash retrieved from backend
+          hash: hash,
           first_name: "Saman",
           last_name: "Perera",
-          email: "savindunawanjana08@gmail.com",
+          email: "customer@example.com",
           phone: "0771234567",
           address: "No.1, Galle Road",
           city: "Colombo",
@@ -724,17 +814,19 @@
           delivery_address: "No. 46, Galle road, Kalutara South",
           delivery_city: "Kalutara",
           delivery_country: "Sri Lanka",
-          custom_1: "",
-          custom_2: "",
         };
 
-        // Show the payhere.js popup, when "PayHere Pay" is clicked
-        // document.getElementById("payhere-payment").onclick = function (e) {
-        payhere.startPayment(payment);
-        // };
+        // Close the loading alert and start payment
+        Swal.close();
+
+        // Small delay to ensure smooth transition
+        setTimeout(() => {
+          console.log("Starting PayHere payment with params:", payment);
+          payhere.startPayment(payment);
+        }, 500);
       }
-      // ======================================
-      // Handle Sign In/Sign Up clicks (for demo)
+
+      // Handle Sign In/Sign Up clicks
       document.getElementById("sinig").addEventListener("click", function () {
         Swal.fire({
           title: "Sign In",
@@ -755,6 +847,18 @@
 
       // Initialize pay button as disabled
       document.getElementById("payButton").disabled = true;
+
+      // Add validation for configuration
+      document.addEventListener("DOMContentLoaded", function () {
+        if (
+          PAYHERE_CONFIG.merchant_id === "121XXXX" ||
+          PAYHERE_CONFIG.merchant_secret === "YOUR_MERCHANT_SECRET"
+        ) {
+          console.warn(
+            "⚠️ Please update PAYHERE_CONFIG with your actual Merchant ID and Secret",
+          );
+        }
+      });
     </script>
   </body>
 </html>
